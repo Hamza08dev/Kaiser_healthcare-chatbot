@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaiser Strategy Flow</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+    <!-- React Flow CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reactflow@11/dist/style.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- React Flow from CDN -->
+    <script src="https://unpkg.com/reactflow@11/dist/umd/index.js"></script>
+
+    <script>
+        (function() {
+            'use strict';
+            
+            // Wait for all scripts to load
+            function waitForDeps(retries = 50) {
+                if (typeof React !== 'undefined' && typeof ReactDOM !== 'undefined' && typeof ReactFlow !== 'undefined') {
+                    init();
+                    return;
+                }
+                if (retries <= 0) {
+                    document.getElementById('root').innerHTML = '<div style="padding: 20px; color: red;">Error: failed to load ReactFlow dependencies.</div>';
+                    return;
+                }
+                setTimeout(() => waitForDeps(retries - 1), 100);
+            }
+
+            function init() {
+                const { useState, useCallback, useMemo, memo, useEffect } = React;
+                const ReactFlowLib = window.ReactFlow || ReactFlow;
+            
+                if (!ReactFlowLib) {
+                    document.getElementById('root').innerHTML = '<div style="padding: 20px; color: red;">Error: ReactFlow library not loaded.</div>';
+                    return;
+                }
+            
+                const { 
+                    ReactFlow, 
+                    Background, 
+                    Controls,
+                    useNodesState,
+                    useEdgesState,
+                    addEdge,
+                    Handle,
+                    Position
+                } = ReactFlowLib;
+
+                // Content Data Structure
+                const nodeContent = {
+                    center: {
+                        title: "Kaiser Permanente Strategy Hub",
+                        content: "Strategic roadmap for 2025-2026. \n\nThis hub connects 2025 performance analysis, industry trends, and the 2026 execution roadmap.",
+                        source: "Executive Summary"
+                    },
+                    learnings_main: {
+                        title: "1. 2025 Performance & Learnings",
+                        content: "Summary of 2025 performance: \n• Revenue ~$32B (Q3)\n• Net Income $2.6B\n• Membership +600K\n• #1 in 71 HEDIS measures.\n\nClick 'Expand' to see Initiatives and Key Learnings.",
+                        source: "Section 3"
+                    },
+                    learnings_initiatives: {
+                        title: "2025 Major Initiatives",
+                        content: `**1. Risant Health Launch:** Established as independent nonprofit; initiated partnerships to scale value-based care.\n**2. Labor Stability:** Resolved major mental health worker disputes; prioritized workforce stability.\n**3. Digital Modernization:** Invested $1.1B+ in Q2 for EHR and remote monitoring infrastructure.\n**4. Health Equity:** Proactive integration of equity metrics despite regulatory scrutiny.`,
+                        source: "Section 3.3"
+                    },
+                    learnings_insights: {
+                        title: "5 Critical Key Learnings",
+                        content: `**1. Quality & Efficiency:** HEDIS leadership proves they are complementary, not competing.\n**2. Integrated Model:** Remains a structural competitive advantage over fragmented systems.\n**3. Prevention Value:** Upstream prevention drives long-term economic value.\n**4. Digital Investment:** Capital in data infrastructure pays immediate dividends in leverage.\n**5. Member-Centricity:** Non-negotiable imperative for retention.`,
+                        source: "Section 3.4"
+                    },
+                    trends_main: {
+                        title: "2. Healthcare Admin Trends",
+                        content: "Analysis of the external environment reshaping healthcare administration in 2025-2026.",
+                        source: "Section 4"
+                    },
+                    trends_list: {
+                        title: "Industry Trends 2025",
+                        content: `**1. Value-Based Shift:** Accelerating move from Fee-for-Service to outcomes-based payment.\n**2. Data-Driven Admin:** Analytics now a core competency for decision making.\n**3. Telehealth Infrastructure:** Remote monitoring becoming permanent care delivery model.\n**4. Automation:** AI/RPA digitizing enrollment, billing, and compliance.\n**5. Health Equity:** Moving from goal to regulatory mandate and competitive differentiator.`,
+                        source: "Section 4.1"
+                    },
+                    trends_opps: {
+                        title: "Emerging Opportunities",
+                        content: `**1. Risant Health Export:** Generate revenue by exporting value-based care models.\n**2. AI Optimization:** Reduce manual admin work by 30-40%.\n**3. Personalization:** Digital platform to drive 60% adoption and satisfaction.\n**4. Health Equity:** Attract underserved members and talent as a differentiator.\n**5. Cost Redesign:** Achieve 2.5-3.5% margin via shared services.`,
+                        source: "Section 4.3"
+                    },
+                    vision_main: {
+                        title: "3. Vision & Strategic Initiatives",
+                        content: "The core forward-looking strategy for 2026. \n\nVision: Proving high-quality, affordable healthcare is a sustainable business model.",
+                        source: "Section 7"
+                    },
+                    vision_pillars: {
+                        title: "5 Strategic Pillars for 2026",
+                        content: `**1. Operational Excellence:** Intelligent Automation & Cost Redesign.\n**2. Risant Health Scaling:** 8-10M members via partnerships.\n**3. Health Equity:** Core strategy & competitive differentiator.\n**4. Member Experience:** Digital-first platform transformation.\n**5. Workforce Resilience:** Culture strengthening & retention.`,
+                        source: "Section 7.2"
+                    },
+                    vision_initiatives: {
+                        title: "2026 Strategic Initiatives",
+                        content: `**1. Excellence Through Efficiency:** $100M-150M savings via automation.\n**2. Risant Acceleration:** 5-7 major health system partnerships.\n**3. Digital-First Platform:** Launch personalized engagement engine.\n**4. Health Equity Program:** Outcome improvements in 15+ conditions.\n**5. Workforce Transformation:** Reskilling & career pathways.`,
+                        source: "Section 7.3"
+                    },
+                    planning_main: {
+                        title: "4. Year End Planning",
+                        content: "Critical strategic considerations and imperatives derived from the 2025 assessment.",
+                        source: "Section 6"
+                    },
+                    planning_imperatives: {
+                        title: "Strategic Imperatives",
+                        content: `**1. Cost Structure:** Redesign for sustainable 2.5%-3.5% margins.\n**2. Risant Leadership:** Accelerate value-based care market leadership.\n**3. Member Retention:** Focus on experience amid market uncertainty.\n**4. Health Equity:** Integration as competitive differentiator.\n**5. Workforce:** Resilience and culture preservation.`,
+                        source: "Section 6.2"
+                    },
+                    impl_main: {
+                        title: "5. Implementation Roadmap",
+                        content: "Quarterly execution framework for 2026.",
+                        source: "Section 8"
+                    },
+                    impl_q1: {
+                        title: "Q1 2026: Foundation",
+                        content: "• Establish efficiency steering committees.\n• Finalize automation vendor selection.\n• Complete compensation benchmarking.\n• Launch Health Equity assessment.",
+                        source: "Section 8.1"
+                    },
+                    impl_q2: {
+                        title: "Q2 2026: Acceleration",
+                        content: "• First cost reductions ($25M+).\n• Sign 2-3 Risant partnerships.\n• Beta launch digital platform (100K members).\n• Begin automation deployment.",
+                        source: "Section 8.1"
+                    },
+                    impl_q3: {
+                        title: "Q3 2026: Scale",
+                        content: "• Digital adoption @ 50%.\n• Revenue realization on target ($35M+).\n• Expand automation to 150+ processes.\n• Community partnership reach expanded.",
+                        source: "Section 8.1"
+                    },
+                    impl_q4: {
+                        title: "Q4 2026: Consolidation",
+                        content: "• Full year cost reduction ($100M-150M).\n• 7-8 Risant partnerships signed.\n• Digital adoption 60%+.\n• Planning for 2027.",
+                        source: "Section 8.1"
+                    }
+                };
+
+                // Child node definitions for each Level 1 node
+                // Positions are relative offsets from parent node
+                const childNodes = {
+                    learnings_main: [
+                        { id: 'learnings_initiatives', contentId: 'learnings_initiatives', label: '2025 Initiatives', icon: '📋', position: { x: -200, y: -150 } },
+                        { id: 'learnings_insights', contentId: 'learnings_insights', label: 'Key Learnings', icon: '💡', position: { x: -200, y: 0 } }
+                    ],
+                    trends_main: [
+                        { id: 'trends_list', contentId: 'trends_list', label: 'Industry Trends', icon: '📊', position: { x: 200, y: -150 } },
+                        { id: 'trends_opps', contentId: 'trends_opps', label: 'Emerging Opportunities', icon: '🚀', position: { x: 200, y: 0 } }
+                    ],
+                    vision_main: [
+                        { id: 'vision_pillars', contentId: 'vision_pillars', label: 'Strategic Pillars', icon: '🏛️', position: { x: 250, y: -100 } },
+                        { id: 'vision_initiatives', contentId: 'vision_initiatives', label: 'Strategic Initiatives', icon: '🎯', position: { x: 250, y: 100 } }
+                    ],
+                    planning_main: [
+                        { id: 'planning_imperatives', contentId: 'planning_imperatives', label: 'Strategic Imperatives', icon: '⚡', position: { x: 200, y: 150 } }
+                    ],
+                    impl_main: [
+                        { id: 'impl_q1', contentId: 'impl_q1', label: 'Q1', icon: '1️⃣', position: { x: -200, y: 150 } },
+                        { id: 'impl_q2', contentId: 'impl_q2', label: 'Q2', icon: '2️⃣', position: { x: -200, y: 220 } },
+                        { id: 'impl_q3', contentId: 'impl_q3', label: 'Q3', icon: '3️⃣', position: { x: -200, y: 290 } },
+                        { id: 'impl_q4', contentId: 'impl_q4', label: 'Q4', icon: '4️⃣', position: { x: -200, y: 360 } }
+                    ]
+                };
+
+                // CardNode Component
+                const CardNode = memo(({ data }) => {
+                    return React.createElement('div', {
+                        style: {
+                            borderRadius: '12px',
+                            padding: '16px',
+                            minWidth: '240px',
+                            maxWidth: '280px',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                            background: data.style?.background || '#ffffff',
+                            border: data.style?.borderColor ? `1px solid ${data.style.borderColor}` : '1px solid #e2e8f0',
+                            color: '#1e293b',
+                            fontFamily: 'sans-serif',
+                            cursor: 'pointer'
+                        }
+                    }, [
+                        React.createElement(Handle, { 
+                            key: 'target',
+                            type: 'target', 
+                            position: Position.Top, 
+                            style: { background: '#94a3b8' } 
+                        }),
+                        React.createElement('div', {
+                            key: 'content',
+                            style: { display: 'flex', gap: '12px', alignItems: 'flex-start' }
+                        }, [
+                            data.icon && React.createElement('div', {
+                                key: 'icon',
+                                style: { 
+                                    background: '#f1f5f9', 
+                                    borderRadius: '8px', 
+                                    padding: '6px', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center' 
+                                }
+                            }, React.createElement('span', { style: { fontSize: '18px' } }, data.icon)),
+                            React.createElement('div', { key: 'text', style: { flex: 1 } }, [
+                                React.createElement('div', {
+                                    key: 'label',
+                                    style: { fontSize: '15px', fontWeight: '700', lineHeight: '1.2', marginBottom: '4px' }
+                                }, data.label),
+                                data.title && React.createElement('div', {
+                                    key: 'title',
+                                    style: { fontSize: '12px', color: '#64748b', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }
+                                }, data.title)
+                            ])
+                        ]),
+                        data.isLevel1 && React.createElement('div', {
+                            key: 'expand-indicator',
+                            style: { 
+                                marginTop: '8px', 
+                                fontSize: '11px', 
+                                color: '#64748b', 
+                                fontStyle: 'italic' 
+                            }
+                        }, data.expanded ? '▼ Expanded' : '▶ Click to expand'),
+                        React.createElement(Handle, { 
+                            key: 'source',
+                            type: 'source', 
+                            position: Position.Bottom, 
+                            style: { background: '#94a3b8' } 
+                        })
+                    ]);
+                });
+
+                // Initial Level 1 nodes (surrounding center)
+                const initialLevel1Nodes = [
+                    {
+                        id: 'center',
+                        type: 'card',
+                        data: { 
+                            label: 'KAISER STRATEGY HUB',
+                            title: 'Strategy Hub',
+                            contentId: 'center',
+                            icon: '🏥',
+                            style: { background: '#eff6ff', borderColor: '#2563eb' }
+                        },
+                        position: { x: 400, y: 300 },
+                    },
+                    {
+                        id: 'learnings_main',
+                        type: 'card',
+                        data: { 
+                            label: '1. KEY LEARNINGS',
+                            contentId: 'learnings_main',
+                            icon: '📈',
+                            isLevel1: true,
+                            expanded: false
+                        },
+                        position: { x: 100, y: 100 },
+                    },
+                    {
+                        id: 'trends_main',
+                        type: 'card',
+                        data: { 
+                            label: '2. TRENDS',
+                            contentId: 'trends_main',
+                            icon: '📊',
+                            isLevel1: true,
+                            expanded: false
+                        },
+                        position: { x: 700, y: 100 },
+                    },
+                    {
+                        id: 'vision_main',
+                        type: 'card',
+                        data: { 
+                            label: '3. VISION',
+                            contentId: 'vision_main',
+                            icon: '🎯',
+                            isLevel1: true,
+                            expanded: false
+                        },
+                        position: { x: 800, y: 300 },
+                    },
+                    {
+                        id: 'planning_main',
+                        type: 'card',
+                        data: { 
+                            label: '4. PLANNING',
+                            contentId: 'planning_main',
+                            icon: '📋',
+                            isLevel1: true,
+                            expanded: false
+                        },
+                        position: { x: 700, y: 500 },
+                    },
+                    {
+                        id: 'impl_main',
+                        type: 'card',
+                        data: { 
+                            label: '5. IMPLEMENTATION',
+                            contentId: 'impl_main',
+                            icon: '🗓️',
+                            isLevel1: true,
+                            expanded: false
+                        },
+                        position: { x: 100, y: 500 },
+                    }
+                ];
+
+                // Initial edges from center to Level 1 nodes
+                const initialEdges = [
+                    { id: 'e-center-learnings', source: 'center', target: 'learnings_main', animated: true },
+                    { id: 'e-center-trends', source: 'center', target: 'trends_main', animated: true },
+                    { id: 'e-center-vision', source: 'center', target: 'vision_main', animated: true },
+                    { id: 'e-center-planning', source: 'center', target: 'planning_main', animated: true },
+                    { id: 'e-center-impl', source: 'center', target: 'impl_main', animated: true }
+                ];
+
+                // Main Component
+                function KaiserStrategyFlow() {
+                    const [nodes, setNodes, onNodesChange] = useNodesState(initialLevel1Nodes);
+                    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+                    const [selectedNode, setSelectedNode] = useState(null);
+                    const [expandedNodes, setExpandedNodes] = useState(new Set());
+
+                    const nodeTypes = useMemo(() => ({
+                        card: CardNode,
+                    }), []);
+
+                    const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+
+                    const toggleNodeExpansion = useCallback((nodeId) => {
+                        const isExpanded = expandedNodes.has(nodeId);
+                        const children = childNodes[nodeId] || [];
+                        
+                        if (isExpanded) {
+                            // Collapse: remove child nodes and edges
+                            setExpandedNodes(prev => {
+                                const newSet = new Set(prev);
+                                newSet.delete(nodeId);
+                                return newSet;
+                            });
+                            
+                            setNodes(currentNodes => {
+                                const filtered = currentNodes.filter(n => !children.some(c => c.id === n.id));
+                                return filtered.map(n => 
+                                    n.id === nodeId ? { ...n, data: { ...n.data, expanded: false } } : n
+                                );
+                            });
+                            
+                            setEdges(currentEdges => 
+                                currentEdges.filter(e => !children.some(c => e.source === c.id || e.target === c.id))
+                            );
+                        } else {
+                            // Expand: add child nodes and edges
+                            setExpandedNodes(prev => {
+                                const newSet = new Set(prev);
+                                newSet.add(nodeId);
+                                return newSet;
+                            });
+                            
+                            setNodes(currentNodes => {
+                                const parentNode = currentNodes.find(n => n.id === nodeId);
+                                if (!parentNode) return currentNodes;
+                                
+                                const parentPos = parentNode.position;
+                                
+                                // Calculate child positions relative to parent
+                                const newChildNodes = children.map(child => {
+                                    return {
+                                        id: child.id,
+                                        type: 'card',
+                                        data: {
+                                            label: child.label,
+                                            contentId: child.contentId,
+                                            icon: child.icon,
+                                            isLevel2: true
+                                        },
+                                        position: {
+                                            x: parentPos.x + child.position.x,
+                                            y: parentPos.y + child.position.y
+                                        }
+                                    };
+                                });
+                                
+                                // Update parent node expanded state and add children
+                                const updatedNodes = currentNodes.map(n => 
+                                    n.id === nodeId ? { ...n, data: { ...n.data, expanded: true } } : n
+                                );
+                                
+                                return [...updatedNodes, ...newChildNodes];
+                            });
+                            
+                            // Add edges from parent to children
+                            const newEdges = children.map(child => ({
+                                id: `e-${nodeId}-${child.id}`,
+                                source: nodeId,
+                                target: child.id,
+                                animated: true
+                            }));
+                            setEdges(currentEdges => [...currentEdges, ...newEdges]);
+                        }
+                    }, [setNodes, setEdges, expandedNodes]);
+
+                    const onNodeClick = useCallback((event, node) => {
+                        const nodeData = node.data;
+                        
+                        // If it's a Level 1 node, only toggle expansion (don't open sidebar)
+                        if (nodeData.isLevel1) {
+                            toggleNodeExpansion(node.id);
+                            // Don't open sidebar for Level 1 nodes
+                            return;
+                        } 
+                        // If it's a Level 2 node, show sidebar
+                        else if (nodeData.isLevel2 || nodeData.contentId) {
+                            const content = nodeContent[nodeData.contentId];
+                            if (content) {
+                                setSelectedNode({
+                                    title: content.title,
+                                    content: content.content,
+                                    source: content.source
+                                });
+                            }
+                        }
+                        // Center node
+                        else if (node.id === 'center') {
+                            const content = nodeContent.center;
+                            if (content) {
+                                setSelectedNode({
+                                    title: content.title,
+                                    content: content.content,
+                                    source: content.source
+                                });
+                            }
+                        }
+                    }, [toggleNodeExpansion]);
+
+                    // Format content - simple approach with HTML string
+                    const formatContentHTML = (text) => {
+                        if (!text) return '';
+                        // Convert **bold** to <strong>
+                        let html = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                        // Convert line breaks
+                        html = html.replace(/\n/g, '<br/>');
+                        return html;
+                    };
+
+                    return React.createElement('div', { style: { width: '100vw', height: '100vh', display: 'flex' } }, [
+                        React.createElement('div', { key: 'flow', style: { flex: 1, position: 'relative' } },
+                            React.createElement(ReactFlow, {
+                                nodes: nodes,
+                                edges: edges,
+                                onNodesChange: onNodesChange,
+                                onEdgesChange: onEdgesChange,
+                                onConnect: onConnect,
+                                onNodeClick: onNodeClick,
+                                nodeTypes: nodeTypes,
+                                fitView: true,
+                                fitViewOptions: { padding: 0.2 }
+                            }, [
+                                React.createElement(Background, { key: 'bg', color: '#cbd5e1', gap: 20 }),
+                                React.createElement(Controls, { key: 'controls' })
+                            ])
+                        ),
+                        selectedNode && React.createElement('div', {
+                            key: 'panel',
+                            style: {
+                                width: '320px',
+                                height: '100%',
+                                background: '#fff',
+                                borderLeft: '1px solid #e2e8f0',
+                                padding: '20px',
+                                boxShadow: '-4px 0 24px rgba(0,0,0,0.05)',
+                                overflowY: 'auto'
+                            }
+                        }, [
+                            React.createElement('div', {
+                                key: 'header',
+                                style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }
+                            }, [
+                                React.createElement('h2', {
+                                    key: 'title',
+                                    style: { fontSize: '18px', fontWeight: 'bold', color: '#0f172a', margin: 0, lineHeight: '1.3' }
+                                }, selectedNode.title),
+                                React.createElement('button', {
+                                    key: 'close',
+                                    onClick: () => setSelectedNode(null),
+                                    style: { cursor: 'pointer', border: 'none', background: 'transparent', fontSize: 20, color: '#64748b' }
+                                }, '×')
+                            ]),
+                            React.createElement('div', {
+                                key: 'content',
+                                style: { lineHeight: '1.6', color: '#334155' },
+                                dangerouslySetInnerHTML: { __html: formatContentHTML(selectedNode.content || '') }
+                            }),
+                            React.createElement('div', {
+                                key: 'source',
+                                style: { marginTop: '20px', fontSize: '11px', color: '#94a3b8', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }
+                            }, `Source: ${selectedNode.source}`)
+                        ])
+                    ]);
+                }
+
+                // Render the app
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(React.createElement(KaiserStrategyFlow));
+            }
+            
+            waitForDeps();
+        })();
+    </script>
+</body>
+</html>
