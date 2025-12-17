@@ -10,41 +10,6 @@ A high-precision RAG-based chatbot for querying the Kaiser Permanente 2025-2026 
 - **Role-Aware Responses**: Tailored guidance based on user role (Board, CEO, Frontline, etc.)
 - **Header-Based Chunking**: Preserves complete strategic units for accurate retrieval
 
-## Architecture
-
-The system uses a simplified two-script workflow:
-
-- **`ingest.py`**: One-time document processing and vector database creation
-- **`app.py`**: Streamlit demo interface for chat and graph visualization
-
-### Technology Stack
-
-- **LLM**: Google GenAI Gemini 2.0 Flash (or latest stable)
-- **Embeddings**: Google GenAI text-embedding-004
-- **Vector Store**: ChromaDB (local persistent storage)
-- **UI Framework**: Streamlit
-- **Document Processing**: Python markdown parser + BeautifulSoup
-
-## File Structure
-
-```
-kaiser_chatbot/
-├── ingest.py                  # Main ingestion orchestration script
-├── app.py                     # Main Streamlit application
-├── document_processor.py      # Header-based chunking logic
-├── hyperlink_handler.py       # URL extraction and content scraping
-├── vector_store.py            # ChromaDB operations and embeddings
-├── rag_handler.py             # RAG query logic and prompt construction
-├── graph_extractor.py         # Strategy graph extraction
-├── config.py                  # Configuration, constants, and role mappings
-├── requirements.txt           # Python dependencies
-├── .env                       # API keys (create from .env.example)
-├── .env.example               # Template for environment variables
-├── README.md                  # This file
-├── output.md                  # Source document
-└── chroma_db/                 # ChromaDB persistent storage (created by ingest.py)
-```
-
 ## Quick Start
 
 Follow these steps in order to get the chatbot running:
@@ -113,6 +78,41 @@ streamlit run app.py
 ```
 
 The app will open in your browser at `http://localhost:8501`
+
+## Architecture
+
+The system uses a simplified two-script workflow:
+
+- **`ingest.py`**: One-time document processing and vector database creation
+- **`app.py`**: Streamlit demo interface for chat and graph visualization
+
+### Technology Stack
+
+- **LLM**: Google GenAI Gemini 2.0 Flash (or latest stable)
+- **Embeddings**: Google GenAI text-embedding-004
+- **Vector Store**: ChromaDB (local persistent storage)
+- **UI Framework**: Streamlit
+- **Document Processing**: Python markdown parser + BeautifulSoup
+
+## File Structure
+
+```
+kaiser_chatbot/
+├── ingest.py                  # Main ingestion orchestration script
+├── app.py                     # Main Streamlit application
+├── document_processor.py      # Header-based chunking logic
+├── hyperlink_handler.py       # URL extraction and content scraping
+├── vector_store.py            # ChromaDB operations and embeddings
+├── rag_handler.py             # RAG query logic and prompt construction
+├── graph_extractor.py         # Strategy graph extraction
+├── config.py                  # Configuration, constants, and role mappings
+├── requirements.txt           # Python dependencies
+├── .env                       # API keys (create from .env.example)
+├── .env.example               # Template for environment variables
+├── README.md                  # This file
+├── output.md                  # Source document
+└── chroma_db/                 # ChromaDB persistent storage (created by ingest.py)
+```
 
 ## Usage
 
