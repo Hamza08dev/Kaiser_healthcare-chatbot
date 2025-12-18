@@ -5,11 +5,23 @@ Centralized configuration, constants, and role mappings.
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables from .env (for local development)
 load_dotenv()
 
 # Google API Configuration
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+try:
+    # Prefer Streamlit secrets when running on Streamlit Cloud
+    import streamlit as st  # type: ignore
+    _ST_AVAILABLE = True
+except ImportError:
+    st = None  # type: ignore
+    _ST_AVAILABLE = False
+
+if _ST_AVAILABLE and st.secrets.get("GOOGLE_API_KEY"):
+    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+else:
+    # Fallback to environment variable (e.g., from .env or system env)
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 GEMINI_MODEL = "gemini-2.5-flash"  # Use latest stable, fallback to gemini-1.5-pro if needed
 EMBEDDING_MODEL = "gemini-embedding-001"  # Google embedding model
 
@@ -89,8 +101,8 @@ def load_config():
     """Load and validate configuration."""
     if not GOOGLE_API_KEY:
         raise ValueError(
-            "GOOGLE_API_KEY not found in environment variables. "
-            "Please set it in .env file or export it."
+            "GOOGLE_API_KEY not found. "
+            "Set it as a Streamlit secret (GOOGLE_API_KEY) or as an environment variable / .env entry."
         )
     return {
         "google_api_key": GOOGLE_API_KEY,
