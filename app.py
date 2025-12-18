@@ -130,8 +130,13 @@ def format_message_with_citations(text: str) -> str:
 
 def main():
     """Main Streamlit application."""
-    st.title("🏥 Kaiser Permanente Strategy Assistant")
-    st.markdown("Ask questions about the 2025-2026 Strategic Roadmap")
+    # Header with logo on the top-left
+    header_col1, header_col2 = st.columns([1, 6])
+    with header_col1:
+        st.image("bo_logo.jpeg", width=70)
+    with header_col2:
+        st.title("🏥 Kaiser Permanente Strategy Assistant")
+        st.markdown("Ask questions about the 2025-2026 Strategic Roadmap")
     
     # Initialize resources
     resources = initialize_resources()
