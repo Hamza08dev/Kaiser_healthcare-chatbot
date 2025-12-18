@@ -169,7 +169,8 @@ def format_citations(response_text: str, chunks: List[Dict]) -> str:
 def query_rag(user_query: str, 
               collection, 
               user_role: Optional[str] = None, 
-              top_k: int = 7) -> Dict:
+              top_k: int = 7,
+              response_style: str = "Detailed") -> Dict:
     """
     Main RAG query function.
     Note: user_role parameter is kept for API compatibility but not used for filtering.
@@ -183,6 +184,7 @@ def query_rag(user_query: str,
         collection: ChromaDB collection
         user_role: Optional user role
         top_k: Number of chunks to retrieve
+        response_style: Controls answer length / level of detail ("Concise" or "Detailed")
         
     Returns:
         Dictionary with:
@@ -217,17 +219,27 @@ def query_rag(user_query: str,
         
         # Build prompt with advice/information mode
         prompt = build_rag_prompt(user_query, retrieved_chunks, detected_role, is_advice=is_advice)
+
+        # Optionally constrain length for concise answers
+        if response_style.lower() == "concise":
+            prompt += (
+                "\n\nPlease keep your answer concise: no more than about 200 words and "
+                "at most 3–5 bullet points."
+            )
         
         # Call Gemini
         logger.info(f"Calling Gemini model: {GEMINI_MODEL}")
         model = genai.GenerativeModel(GEMINI_MODEL)
         
         # Configure generation
+        # Adjust max output tokens based on desired style
+        max_tokens = 1024 if response_style.lower() == "concise" else 4096
+
         generation_config = {
             'temperature': 0.3,  # Lower temperature for more factual responses
             'top_p': 0.95,
             'top_k': 40,
-            'max_output_tokens': 4096,
+            'max_output_tokens': max_tokens,
         }
         
         response = model.generate_content(

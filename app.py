@@ -144,12 +144,11 @@ def main():
     with st.sidebar:
         st.header("⚙️ Configuration")
         
-        # Role selector
-        role_options = ["General", "Board", "CEO/Executive", "Operational Leaders", "Frontline Staff"]
-        selected_role = st.selectbox(
-            "Select Your Role",
-            role_options,
-            help="Selecting a role will prioritize relevant guidance from Section 8.3"
+        # Response style selector (replaces deprecated role selector)
+        response_style = st.selectbox(
+            "Answer Length",
+            ["Concise", "Detailed"],
+            help="Choose how long you want the assistant's answers to be."
         )
         
         st.divider()
@@ -217,14 +216,12 @@ def main():
             # Get assistant response
             with st.spinner("Thinking..."):
                 try:
-                    # Normalize role for query
-                    query_role = None if selected_role == "General" else selected_role
-                    
                     result = query_rag(
                         user_query=user_input,
                         collection=collection,
-                        user_role=query_role,
-                        top_k=5
+                        user_role=None,
+                        top_k=5,
+                        response_style=response_style
                     )
                     
                     response = result['response']
