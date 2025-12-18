@@ -5,6 +5,7 @@ Provides chat interface and strategy graph visualization.
 import streamlit as st
 import logging
 from typing import Optional, Dict
+import inspect
 
 from config import (
     load_config,
@@ -13,7 +14,7 @@ from config import (
     DOCUMENT_PATH
 )
 from vector_store import initialize_chroma_db, collection_exists
-from rag_handler import query_rag
+import rag_handler
 from document_processor import parse_markdown_file
 import google.generativeai as genai
 
@@ -216,12 +217,20 @@ def main():
             # Get assistant response
             with st.spinner("Thinking..."):
                 try:
-                    result = query_rag(
+                    # Backwards-compatible call to query_rag:
+                    # Only pass response_style if the deployed function supports it.
+                    query_fn = rag_handler.query_rag
+                    sig = inspect.signature(query_fn)
+                    extra_kwargs = {}
+                    if "response_style" in sig.parameters:
+                        extra_kwargs["response_style"] = response_style
+
+                    result = query_fn(
                         user_query=user_input,
                         collection=collection,
                         user_role=None,
                         top_k=5,
-                        response_style=response_style
+                        **extra_kwargs
                     )
                     
                     response = result['response']
